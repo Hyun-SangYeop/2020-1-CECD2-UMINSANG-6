@@ -1,4 +1,8 @@
 import java.net.*;
+
+import org.apache.tika.exception.TikaException;
+import org.xml.sax.SAXException;
+
 import java.io.*;
 
 public class Server extends Thread{
@@ -11,6 +15,7 @@ public class Server extends Thread{
 	public void run()
 	{
 		Socket server;
+		String url;
 		while(true) {
 			try {
 				server=serverSocket.accept();
@@ -19,7 +24,21 @@ public class Server extends Thread{
 				
 				BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
 				
-				System.out.println(in.readLine());
+				url=in.readLine();
+				System.out.println(url);
+				
+				
+				
+				try {
+					new Validation().validate(url, "UTF-8");
+				} catch (SAXException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (TikaException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 				server.close();
 			}
 			
@@ -31,16 +50,16 @@ public class Server extends Thread{
 		}
 	}
 	
-	public static void main(String[] args) {
-		int port=1218;
-		try {
-			Thread t=new Server(port);
-			t.start();
-		}
-		catch(IOException e) {
-			e.printStackTrace();
-		}
-	}
+//	public static void main(String[] args) {
+//		int port=1218;
+//		try {
+//			Thread t=new Server(port);
+//			t.start();
+//		}
+//		catch(IOException e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
 	
 }
