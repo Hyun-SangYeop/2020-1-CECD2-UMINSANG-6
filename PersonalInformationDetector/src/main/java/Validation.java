@@ -8,13 +8,17 @@ import java.util.stream.IntStream;
 
 // 예전 이름 FileScanner
 public class Validation {
+	
+	// number of each detection (0:SSN, 1:MPH, 2:PHN, 3:HIN)
+	public static int checkNum[] = {0, 0, 0, 0};
 
 	// Discover에서 compile하는데 이를 평가할 떄마다 할 수 없는 노릇
 	// 1번만 해도 충분한 것들은 다 뺴놓자
     void validate(String path, String encoding) throws IOException {
         Discover d = new Discover(Arrays.asList(SSN, MPH, PHN, HIN));
 
-        String txt = new String(Files.readAllBytes(Paths.get(path)), encoding);
+        //String txt = new String(Files.readAllBytes(Paths.get(path)), encoding);
+        String txt = Extractor.extract(path);
 
         d.scan(txt, (idf, start, end) -> {
             System.out.println(idf + ": " + txt.substring(start, end));
@@ -228,6 +232,10 @@ public class Validation {
      * main
      */
     public static void main(String[] args) throws IOException {
-        new Validation().validate("./testfile/test.txt", "UTF-8");
+    	long beforeTime = System.currentTimeMillis();
+    	new Validation().validate("./testfile/1.txt", "UTF-8");
+    	long afterTime = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
+		double secDiffTime = (afterTime - beforeTime)/1000.0; //두 시간에 차 계산
+		System.out.println("시간차이(s) : "+secDiffTime);
     }
 }
