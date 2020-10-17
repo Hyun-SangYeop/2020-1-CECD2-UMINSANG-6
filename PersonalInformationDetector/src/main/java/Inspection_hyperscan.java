@@ -318,9 +318,9 @@ public class Inspection_hyperscan {
 	
 	public static void main(String[] args) throws UnsupportedEncodingException, IOException {
 		
-		
 		long beforeTime = System.currentTimeMillis();
-		new Inspection_hyperscan().checker("./testfile/1.txt", "UTF-8");
+		
+		new Inspection_hyperscan().checker("./testfile/test100000.txt", "UTF-8");
 		long afterTime = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
 		double secDiffTime = (afterTime - beforeTime)/1000.0; //두 시간에 차 계산
 		System.out.println("시간차이(s) : "+secDiffTime);

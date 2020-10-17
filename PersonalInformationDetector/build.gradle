@@ -1,25 +1,38 @@
 plugins {
-    id 'java'
+    //id 'java'
+    // Apply the java-library plugin to add support for Java Library
+    id 'java-library'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+//group 'org.example'
+//version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
 repositories {
-    mavenCentral()
+    //mavenCentral()
+    jcenter()
 }
 
 [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
+configurations{
+	all*.exclude group: 'xml-apis', module:'xml-apis'
+}
+
 dependencies {
+	// This dependency is exported to consumers, that is to say found on their compile classpath.
+    api 'org.apache.commons:commons-math3:3.6.1'
+    
+    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
+    implementation 'com.google.guava:guava:28.2-jre'
+    
     testCompile group: 'junit', name: 'junit', version: '4.12'
     // https://mvnrepository.com/artifact/org.apache.tika/tika-core
     compile group: 'org.apache.tika', name: 'tika-core', version: '1.24'
     // https://mvnrepository.com/artifact/org.apache.tika/tika-parsers
     compile group: 'org.apache.tika', name: 'tika-parsers', version: '1.24'
-    compile group: 'org.apache.tika', name: 'tika-server', version: '1.24.1'
+    //compile group: 'org.apache.tika', name: 'tika-server', version: '1.24.1'
     
 	//runtime 'org.apache.tika:tika-parsers:1.24'
     
