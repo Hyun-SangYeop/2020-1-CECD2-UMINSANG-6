@@ -1,54 +1,35 @@
-
-import java.io.IOException;
+package DetectorTest;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.stream.IntStream;
-import java.io.File;
+
+import java.net.*;
 
 import org.apache.tika.exception.TikaException;
 import org.xml.sax.SAXException;
 
+import java.io.*;
+
 // 예전 이름 FileScanner
 public class Validation {
 	
-	final static int SSNCONDITION=1;
-	final static int MPHCONDITION=1;
-	final static int PHNCONDITION=1;
-	final static int HINCONDITION=0;
-	
-	static int SSNCOUNT;
-	static int MPHCOUNT;
-	static int PHNCOUNT;
-	static int HINCOUNT;
-	
+	// number of each detection (0:SSN, 1:MPH, 2:PHN, 3:HIN)
+	public static int checkNum[] = {0, 0, 0, 0};
 
 	// Discover에서 compile하는데 이를 평가할 떄마다 할 수 없는 노릇
 	// 1번만 해도 충분한 것들은 다 뺴놓자
-    void validate(String path, String encoding) throws IOException, SAXException, TikaException {
+    void validate(String path, String encoding) throws IOException {
         Discover d = new Discover(Arrays.asList(SSN, MPH, PHN, HIN));
-        SSNCOUNT=0;MPHCOUNT=0;PHNCOUNT=0;HINCOUNT=0;
 
-		//String txt = new String(Files.readAllBytes(Paths.get(path)), encoding);
-        String txt = new Extractor().extract(path);
+        //String txt = new String(Files.readAllBytes(Paths.get(path)), encoding);
+        String txt = Extractor.extract(path);
 
         d.scan(txt, (idf, start, end) -> {
             System.out.println(idf + ": " + txt.substring(start, end));
         });
-        
-        File file=new File(path);
-        if(SSNCOUNT>SSNCONDITION||MPHCOUNT>MPHCONDITION||PHNCOUNT>PHNCONDITION||HINCOUNT>HINCONDITION) {
-        	if(file.delete()) {
-        		System.out.println("파일 삭제 성공");
-        	}else {
-        		System.out.println("파일 삭제 실패");
-        	}
-        }
-        
-        
-        
     }
     
     /*
@@ -93,17 +74,8 @@ public class Validation {
         int wsum = (2 * ssn6[0] + 3 * ssn6[1] + 4 * ssn6[2] + 5 * ssn6[3] + 6 * ssn6[4] + 7 * ssn6[5] + 8 * ssn7[0] + 9 * ssn7[1] + 2 * ssn7[2]
                 + 3 * ssn7[3] + 4 * ssn7[4] + 5 * ssn7[5]);
 
-        boolean isSSNValidationOK=(11 - wsum % 11) % 10 == ssn7[6];
-        
-        if(isSSNValidationOK) {
-        	SSNCOUNT++;
-        	return true;
-        }
-        else {
-        	return false;
-        }
         // 맨 마지막자리가 체크섬이다.
-        //return (11 - wsum % 11) % 10 == ssn7[6];
+        return (11 - wsum % 11) % 10 == ssn7[6];
     };
 
     static final Identifier SSN = new Identifier("주민등록번호", SSN_PTTN, SSN_VALID);
@@ -162,8 +134,6 @@ public class Validation {
     	if(mph.get(len-4) == 0 && mph.get(len-3) == 0 && mph.get(len-2) == 0 && mph.get(len-1) == 0)
     		return false;    	
     	
-    	
-    	MPHCOUNT++;
         return true;
     };
 
@@ -227,8 +197,6 @@ public class Validation {
         if(phn.get(1) != 2 && (phn.get(3) == 0 || phn.get(3) == 1))
         	return false;
 
-        
-        PHNCOUNT++;
         return true;
     };
 
@@ -245,16 +213,7 @@ public class Validation {
     			hin[4]*3 + hin[5]*5 + hin[6]*7 + hin[7]*9 +
     			hin[8]*3 + hin[9]*5) % 11;
     	
-    	boolean isHINValidationOK=(wsum <= 1 ? 1 : 11) - wsum == hin[10];
-    	
-    	if(isHINValidationOK) {
-    		HINCOUNT++;
-    		return true;
-    	}
-    	else
-    		return false;
-    	
-    	//return (wsum <= 1 ? 1 : 11) - wsum == hin[10];
+    	return (wsum <= 1 ? 1 : 11) - wsum == hin[10];
     };
     static final Identifier HIN = new Identifier("건강보험증번호", HIN_PTTN, HIN_VALID);
     
@@ -279,8 +238,54 @@ public class Validation {
     /*
      * main
      */
-//    public static void main(String[] args) throws IOException, SAXException, TikaException {
-//        //new Validation().validate("./testfile/test.txt", "UTF-8");
-//    	new Validation().validate("/media/user/C2B8023BB8022E8B/test", "UTF-8");
-//    }
+    public static void main(String[] args) throws IOException{
+    	int port=1214;
+    	ServerSocket serverSocket = new ServerSocket(port);
+    	Socket server;
+    	String url;
+    	while(true) {
+			try {
+				server=serverSocket.accept();
+				
+				
+				
+				System.out.println("Just connected to " + server.getRemoteSocketAddress());
+				
+				BufferedReader in = new BufferedReader(new InputStreamReader(server.getInputStream()));
+				//BufferedOutputStream out=new BufferedOutputStream(server.getOutputStream());
+				OutputStream out = server.getOutputStream();
+				
+				out.write("abc".getBytes());
+				
+				url=in.readLine();
+				System.out.println(url);
+				
+				
+				long beforeTime1 = System.currentTimeMillis();
+				new Validation().validate(url, "UTF-8");
+				long afterTime1 = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
+				double secDiffTime1 = (afterTime1 - beforeTime1)/1000.0; //두 시간에 차 계산
+				System.out.println("시간차이(s) : "+secDiffTime1);
+				
+				
+				//byte[] b = "abc".getBytes();
+				//out.write(b);
+				//out.flush();
+				
+				long beforeTime = System.currentTimeMillis();
+				new Inspection_hyperscan().checker(url, "UTF-8");
+				long afterTime = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
+				double secDiffTime = (afterTime - beforeTime)/1000.0; //두 시간에 차 계산
+				System.out.println("시간차이(s) : "+secDiffTime);
+				
+				server.close();
+			}
+			
+			catch(IOException e)
+			{
+				e.printStackTrace();
+				break;
+			}
+    	}
+    }
 }
