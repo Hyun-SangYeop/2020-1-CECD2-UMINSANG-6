@@ -1,4 +1,8 @@
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -10,19 +14,21 @@ import java.util.stream.IntStream;
 public class Validation {
 	
 	// number of each detection (0:SSN, 1:MPH, 2:PHN, 3:HIN)
-	public static int checkNum[] = {0, 0, 0, 0};
+	public static long checkNum[] = {0, 0, 0, 0};
 
 	// Discover에서 compile하는데 이를 평가할 떄마다 할 수 없는 노릇
 	// 1번만 해도 충분한 것들은 다 뺴놓자
-    void validate(String path, String encoding) throws IOException {
+    int validate(String path, String encoding) throws IOException {
         Discover d = new Discover(Arrays.asList(SSN, MPH, PHN, HIN));
 
         //String txt = new String(Files.readAllBytes(Paths.get(path)), encoding);
         String txt = Extractor.extract(path);
 
-        d.scan(txt, (idf, start, end) -> {
+        return d.scan(txt, (idf, start, end) -> {
             System.out.println(idf + ": " + txt.substring(start, end));
         });
+        
+        
     }
     
     /*
@@ -232,10 +238,63 @@ public class Validation {
      * main
      */
     public static void main(String[] args) throws IOException {
-    	long beforeTime = System.currentTimeMillis();
-    	new Validation().validate("./testfile/test100000.txt", "UTF-8");
-    	long afterTime = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
-		double secDiffTime = (afterTime - beforeTime)/1000.0; //두 시간에 차 계산
-		System.out.println("시간차이(s) : "+secDiffTime);
+//    	long beforeTime = System.currentTimeMillis();
+//    	new Validation().validate("./testfile/test100000.txt", "UTF-8");
+//    	long afterTime = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
+//		double secDiffTime = (afterTime - beforeTime)/1000.0; //두 시간에 차 계산
+//		System.out.println("시간차이(s) : "+secDiffTime);
+		
+		int port=50000;
+		while (true) {
+			try
+
+			{
+				checkNum[0] = 0; // ssn
+				checkNum[1] = 0; // mph
+				checkNum[2] = 0; // phn
+				checkNum[3] = 0; // hin
+
+				ServerSocket s_socket = new ServerSocket(port);
+
+				Socket client_socket = s_socket.accept();
+
+				byte[] byteArr = new byte[1024];
+
+				InputStream client_data = client_socket.getInputStream();
+
+				int readByteCount = client_data.read(byteArr);
+				System.out.println(readByteCount);
+				String fromClient = new String(byteArr, 0, readByteCount, "UTF-8");
+
+				System.out.println("from c-client: " + fromClient);
+
+				long beforeTime1 = System.currentTimeMillis();
+				int inspection = new Validation().validate(fromClient, "UTF-8");
+				long afterTime1 = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
+				double secDiffTime1 = (afterTime1 - beforeTime1) / 1000.0; // 두 시간에 차 계산
+				System.out.println("시간차이(s) : " + secDiffTime1);
+
+				//String sendDataString = String.valueOf(secDiffTime1);
+				String sendDataString = String.valueOf(inspection);
+				// inspection_hyperscan 처럼 수정 아직 안함 (필요)
+				
+				
+				OutputStream server_data = client_socket.getOutputStream();
+
+				server_data.write(sendDataString.getBytes());
+
+				client_socket.close();
+
+				s_socket.close();
+
+			}
+
+			catch (Exception e) {
+
+				e.printStackTrace();
+
+			}
+
+		}
     }
 }

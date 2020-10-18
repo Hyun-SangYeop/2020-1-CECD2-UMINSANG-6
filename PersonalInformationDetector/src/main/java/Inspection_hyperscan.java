@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ public class Inspection_hyperscan {
 	//static final String CCARD_PTTN = "((5[1-5]\\d{14})|(4\\d{12}(\\d{3})?)|(3[47]\\d{13})|(6011\\d{12})|((30[0-5]|3[68]\\d)\\d{11}))";
 	
 	// number of each detection (0:SSN, 1:MPH, 2:PHN, 3:HIN)
-	public static int checkNum[] = {0, 0, 0, 0};
+	public static long checkNum[] = {0, 0, 0, 0};
 	
 	public static final int THIS_YEAR = Calendar.getInstance().get(Calendar.YEAR);
 
@@ -216,7 +218,7 @@ public class Inspection_hyperscan {
     	}
     }
 	
-	void checker(String path, String encoding) throws UnsupportedEncodingException, IOException {
+	int checker(String path, String encoding) throws UnsupportedEncodingException, IOException {
 		//String txt = new String(Files.readAllBytes(Paths.get(path)), encoding);
 		 String txt = Extractor.extract(path);
 		
@@ -284,9 +286,7 @@ public class Inspection_hyperscan {
 				System.out.println("MPH " + checkNum[1]);
 				System.out.println("PHN " + checkNum[2]);
 				System.out.println("HIN " + checkNum[3]);
-		        
-		        
-		        
+		        		        
 		        //matches always contain the expression causing the match and the end position of the match
 		        //the start position and the matches string it self is only part of a matach if the
 		        //SOM_LEFTMOST is set (for more details refer to the original hyperscan documentation)
@@ -314,16 +314,83 @@ public class Inspection_hyperscan {
 		catch(IOException ie) {
 		  //IO during serializing / deserializing failed
 		}
+		finally
+		{
+			// 통제 정책
+			if(checkNum[0] > 5 || checkNum[1] >5
+					|| checkNum[2] > 5 || checkNum[3] > 5
+					|| (checkNum[0] + checkNum[1]
+							+ checkNum[2] + checkNum[3] > 5))
+				return 1;
+			else
+				return 0;
+		}
 	}
 	
 	public static void main(String[] args) throws UnsupportedEncodingException, IOException {
 		
-		long beforeTime = System.currentTimeMillis();
+//		long beforeTime = System.currentTimeMillis();
+//		
+//		new Inspection_hyperscan().checker("./testfile/test100000.txt", "UTF-8");
+//		long afterTime = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
+//		double secDiffTime = (afterTime - beforeTime)/1000.0; //두 시간에 차 계산
+//		System.out.println("시간차이(s) : "+secDiffTime);
 		
-		new Inspection_hyperscan().checker("./testfile/test100000.txt", "UTF-8");
-		long afterTime = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
-		double secDiffTime = (afterTime - beforeTime)/1000.0; //두 시간에 차 계산
-		System.out.println("시간차이(s) : "+secDiffTime);
+		
+		
+		int port=50000;
+		while (true) {
+			try
+
+			{
+				checkNum[0] = 0; // ssn
+				checkNum[1] = 0; // mph
+				checkNum[2] = 0; // phn
+				checkNum[3] = 0; // hin
+
+				ServerSocket s_socket = new ServerSocket(port++);
+
+				Socket client_socket = s_socket.accept();
+
+				byte[] byteArr = new byte[1024];
+
+				InputStream client_data = client_socket.getInputStream();
+
+				int readByteCount = client_data.read(byteArr);
+				System.out.println(readByteCount);
+				String fromClient = new String(byteArr, 0, readByteCount, "UTF-8");
+
+				System.out.println("from c-client: " + fromClient);
+
+				long beforeTime1 = System.currentTimeMillis();
+				int inspection = new Inspection_hyperscan().checker(fromClient, "UTF-8");
+				long afterTime1 = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
+				double secDiffTime1 = (afterTime1 - beforeTime1) / 1000.0; // 두 시간에 차 계산
+				System.out.println("시간차이(s) : " + secDiffTime1);
+
+				//String sendDataString = String.valueOf(secDiffTime1);
+				//String sendDataString = String.valueOf(inspection);
+				String sendDataString = inspection + " " + checkNum[0] + " "
+						+ checkNum[1] + " " + checkNum[2] + " " + checkNum[3];
+				
+
+				OutputStream server_data = client_socket.getOutputStream();
+
+				server_data.write(sendDataString.getBytes());
+
+				client_socket.close();
+
+				s_socket.close();
+
+			}
+
+			catch (Exception e) {
+
+				e.printStackTrace();
+
+			}
+
+		}
 	}
 	
 }

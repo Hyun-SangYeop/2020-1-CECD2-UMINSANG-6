@@ -21,7 +21,7 @@ public class Discover {
         }
     }
 
-    void scan(String txt, IncidentConsumer cnsm) {
+    int scan(String txt, IncidentConsumer cnsm) {
     	
         for (int i = 0; i < pts.size(); i++) {
             // 각각의 i번째 식별자를 검색한다.
@@ -52,6 +52,15 @@ public class Discover {
 		System.out.println("MPH " + Validation.checkNum[1]);
 		System.out.println("PHN " + Validation.checkNum[2]);
 		System.out.println("HIN " + Validation.checkNum[3]);
+		
+		// 통제 정책
+		if(Validation.checkNum[0] > 5 || Validation.checkNum[1] >5
+				|| Validation.checkNum[2] > 5 || Validation.checkNum[3] > 5
+				|| (Validation.checkNum[0] + Validation.checkNum[1]
+						+ Validation.checkNum[2] + Validation.checkNum[3] > 5))
+			return 1;
+		else
+			return 0;
     }
 
     @FunctionalInterface
