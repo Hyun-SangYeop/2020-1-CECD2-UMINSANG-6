@@ -1,0 +1,19 @@
+# test files
+testfile/
+
+# Java class files
+.class
+
+# Ignore gradle files
+.gradle/
+build/
+
+# eclipse Metadata
+.metadata/
+
+# eclipse
+.classpath
+.project
+.settings/
+bin/
+
