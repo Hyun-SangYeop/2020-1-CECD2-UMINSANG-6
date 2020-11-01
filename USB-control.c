@@ -28,6 +28,8 @@
 #define EVENT_SIZE  ( sizeof (struct inotify_event) ) /*size of one event*/
 #define BUF_LEN     ( MAX_EVENTS * ( EVENT_SIZE + LEN_NAME )) /*buffer to store the data of events*/
 
+char mediausername[100];
+
 //감지할 이벤트 항목
 static uint64_t event_mask =
 (
@@ -164,7 +166,7 @@ void get_inotify_event(int i_fd, int f_fd){
 					char usb_path[100];
 					printf("directory : %s was created\n",event->name);
                                         // 계정이름 자동인식 방법 찾아야 겠네
-					sprintf(usb_path,"/media/reserved1/%s",event->name);
+					sprintf(usb_path,"%s/%s", mediausername,event->name);
 
 					sleep(1);
 
@@ -181,7 +183,7 @@ void get_inotify_event(int i_fd, int f_fd){
 				if (event->mask & IN_ISDIR){
 		     			printf( "The directory %s was deleted.\n", event->name );
                                         // 계정이름 자동인식 방법 찾아야 겠네
-					sprintf(path,"/media/reserved1/%s",event->name);
+					sprintf(path,"%s/%s", mediausername,event->name);
 		    			if(fanotify_mark(f_fd, FAN_MARK_REMOVE, event_mask, AT_FDCWD, path)>=0){
 						printf("removed mark\n");
 				       	}
@@ -334,6 +336,14 @@ void get_fanotify_event(struct fanotify_event_metadata* event, int fd){
 
 //argv[1] 은 /media/사용자명
 int main(int argc, char* argv[]){
+
+	if (argc != 2) {
+		printf("현재 프로그램은 매개변수에 /media/userid 를 넣어주어야 합니다\n");
+		exit(1);
+	}
+	else {
+		strcpy(mediausername, argv[1]);
+	}
         int fd, poll_num;
         nfds_t nfds;
 
