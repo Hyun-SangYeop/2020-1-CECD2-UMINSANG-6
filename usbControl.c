@@ -153,7 +153,7 @@ get_file_path_from_fd (int     fd,
 }
 
 
-//이진 탐색으로 개선 필요
+//binary search will be needed
 char* findUserID(userNames* users, int cnt, struct inotify_event* event){
 	for(int i=0; i< cnt; ++i){
 		if(event->wd == users[i].wd){
@@ -237,13 +237,7 @@ void get_fanotify_event(struct fanotify_event_metadata* event, int fd){
 
 		//통제 해야한다면
 		if(x==-1){
-			char mail_command[300];
-		    	char mail_content[100]={"strange trial to copy confidential file has been detected"};
-			sprintf(mail_content,"%s : %s",mail_content, buffer);
-		    	sprintf(mail_command, "echo \"%s\" | mail -s 'alert' whitesky118@gmail.com",mail_content);	//send alert  mail to whitesky118@gmail.com
-		    	system(mail_command);
 			printf("blocked\n");
-			
 		}
 		//통제 필요없으면 다시 로그디렉토리에서 가져옴
 		else{
@@ -387,7 +381,6 @@ void readUsers(FILE* fp,int count, userNames* users){
        	}
 }
 
-//argv[1] 은 /media/사용자명
 int main(int argc, char* argv[]){
 
 	/* erase
@@ -440,7 +433,7 @@ int main(int argc, char* argv[]){
 		printf("inotify couldn't add watch\n");
 	}
 	else{
-		printf("inotify watching...\n");
+		printf("inotify watching...\n");	//erase
 	}
 	*/
 
@@ -459,8 +452,7 @@ int main(int argc, char* argv[]){
 	fds[1].fd=fd;
 	fds[1].events=POLLIN;
 
-	//erase
-	//printf("listening for events\n"); 
+      //  printf("listening for events\n"); //erase
 
 	//감시 시작
         while(1){
