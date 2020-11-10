@@ -381,10 +381,9 @@ void readUsers(FILE* fp,int count, userNames* users){
        	}
 }
 
-//argv[1] 은 /media/사용자명
 int main(int argc, char* argv[]){
 
-	/*
+	/* erase
 	if (argc != 2) {
 		printf("현재 프로그램은 매개변수에 /media/userid 를 넣어주어야 합니다\n");
 		exit(1);
@@ -453,7 +452,7 @@ int main(int argc, char* argv[]){
 	fds[1].fd=fd;
 	fds[1].events=POLLIN;
 
-        printf("listening for events\n"); //erase
+      //  printf("listening for events\n"); //erase
 
 	//감시 시작
         while(1){
