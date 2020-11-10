@@ -153,7 +153,7 @@ get_file_path_from_fd (int     fd,
 }
 
 
-//binary search will be needed
+// 이진 탐색으로 개선 필
 char* findUserID(userNames* users, int cnt, struct inotify_event* event){
 	for(int i=0; i< cnt; ++i){
 		if(event->wd == users[i].wd){
@@ -235,8 +235,14 @@ void get_fanotify_event(struct fanotify_event_metadata* event, int fd){
 		//이 부분을 실제 벨리데이터로 교체해야함
 		x=scanner(log_path);
 
-		//통제 해야한다면
+//!**  통합시에는 이 부분부터 **!
+
+		//통제 해야한다면 메일 보내고 block 메세지 출력하기
 		if(x==-1){
+		      	char mail_command[300];
+	    		char mail_content[100]={"strange trial to copy confidential file was detected"};	
+			sprintf(mail_command, "echo \"%s\" | mail -s 'alert' whitesky118@gmail.com",mail_content);  //whitesky118@gmail.com 으로 보내기
+		    	system(mail_command);
 			printf("blocked\n");
 		}
 		//통제 필요없으면 다시 로그디렉토리에서 가져옴
@@ -245,6 +251,8 @@ void get_fanotify_event(struct fanotify_event_metadata* event, int fd){
 			sprintf(command,"mv \"%s\" \"%s\"",log_path,usb_path);
 			system(command);
 		}
+//!**	이 부분까지를 삭제하고 아래 소켓 주석을 풀 것 **!
+
 /*
       
         //----------------------------socket
@@ -348,6 +356,11 @@ void get_fanotify_event(struct fanotify_event_metadata* event, int fd){
 
                     temp = strtok(NULL, " ");
             }
+
+	    char mail_command[300];
+	    char mail_content[100]={"strange trial to copy confidential file was detected"};
+	    sprintf(mail_command, "echo \"%s\" | mail -s 'alert' whitesky118@gmail.com",mail_content);
+	    system(mail_command);
             printf("%s is blocked\n\n", strrchr(buffer, '/') + sizeof(char));
     }
                 //통제 필요없으면 다시 로그디렉토리에서 가져옴
@@ -433,7 +446,7 @@ int main(int argc, char* argv[]){
 		printf("inotify couldn't add watch\n");
 	}
 	else{
-		printf("inotify watching...\n");	//erase
+		printf("inotify watching...\n");
 	}
 	*/
 
@@ -452,7 +465,7 @@ int main(int argc, char* argv[]){
 	fds[1].fd=fd;
 	fds[1].events=POLLIN;
 
-      //  printf("listening for events\n"); //erase
+      //printf("listening for events\n"); erase
 
 	//감시 시작
         while(1){
@@ -512,6 +525,7 @@ int main(int argc, char* argv[]){
         }
 
 	free(users);
-	//fclose
+	close(i_fd);
+	close(fd);
 }
 
