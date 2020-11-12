@@ -5,7 +5,7 @@ plugins {
 }
 
 //apply plugin : 'java'
-//gradle wrapper, ./gradlew build, ./gradlew run
+//gradle clean, gradle wrapper, (./gradlew build), ./gradlew run
 apply plugin : 'application'
 mainClassName = 'Inspection_hyperscan'
 
