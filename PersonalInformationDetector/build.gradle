@@ -4,6 +4,11 @@ plugins {
     id 'java-library'
 }
 
+//apply plugin : 'java'
+//gradle wrapper, ./gradlew build, ./gradlew run
+apply plugin : 'application'
+mainClassName = 'Inspection_hyperscan'
+
 //group 'org.example'
 //version '1.0-SNAPSHOT'
 

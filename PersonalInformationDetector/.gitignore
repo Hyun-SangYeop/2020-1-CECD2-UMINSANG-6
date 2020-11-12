@@ -1,3 +1,4 @@
+# master의 .gitignore로 바꾸긴 해야함
 /.gradle/
 /build/
 /testfile/*
