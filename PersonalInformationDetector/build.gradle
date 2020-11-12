@@ -5,7 +5,10 @@ plugins {
 }
 
 //apply plugin : 'java'
-//gradle clean, gradle wrapper, (./gradlew build), ./gradlew run
+
+// 2번 추천
+//1. gradle clean, gradle wrapper, ./gradlew run
+//2. ./gradlew clean, (./gradlew build), ./gradlew run
 apply plugin : 'application'
 mainClassName = 'Inspection_hyperscan'
 
