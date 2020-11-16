@@ -27,9 +27,6 @@
 #define LEN_NAME 1024                                  /*Assuming length of the filename won't exceed 16 bytes*/
 #define EVENT_SIZE (sizeof(struct inotify_event))      /*size of one event*/
 #define BUF_LEN (MAX_EVENTS * (EVENT_SIZE + LEN_NAME)) /*buffer to store the data of events*/
-#define FIFO_FILE_C_TO_JAVA "/home/user/FIFOCTOJAVA"
-#define FIFO_FILE_JAVA_TO_C "/home/user/FIFOJAVATOC"
-#define BUFF_SIZE 1024
 
 typedef struct userNames
 {
@@ -242,14 +239,9 @@ int port = 50000;
 void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
 {
     char buffer[100];
-    int fd_c_to_java;
-    int fd_java_to_c;
-    char *str = "forum.falinux.com\n";
-    char buff[BUFF_SIZE];
     get_file_path_from_fd(event->fd, buffer, 100);
     printf("Received event in path '%s'\n", buffer);
     //handler
-    printf("12342134214213423414");
     if (event->mask & FAN_CLOSE_WRITE)
     {
         sleep(1);
@@ -258,58 +250,119 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
         char log_path[100];
         char usb_path[100];
         //printf("close event\n");
-        printf("12342134214213423414");
+
         sprintf(command, "mv \"%s\" /usb", buffer);
         system(command);
-        printf("12342134214213423414");
+
         cutString(buffer, usb_path, log_path);
-        //----------------------------------------pipe start
-        if (-1 == (fd_c_to_java = open(FIFO_FILE_C_TO_JAVA, O_WRONLY)))
+
+        // //!**  통합시에는 이 부분부터 **!
+        // 		x=scanner(log_path);
+
+        // 		//통제 해야한다면 메일 보내고 block 메세지 출력하기
+        // 		if(x==-1){
+        // 		      	char mail_command[300];
+        // 	    		char mail_content[100]={"strange trial to copy confidential file was detected"};
+        // 			sprintf(mail_command, "echo \"%s\" | mail -s 'alert' whitesky118@gmail.com",mail_content);  //whitesky118@gmail.com 으로 보내기
+        // 		    	system(mail_command);
+        // 			printf("blocked\n");
+        // 		}
+        // 		//통제 필요없으면 다시 로그디렉토리에서 가져옴
+        // 		else{
+        // 			cnt++;
+        // 			sprintf(command,"mv \"%s\" \"%s\"",log_path,usb_path);
+        // 			system(command);
+        // 		}
+        // //!**	이 부분까지를 삭제하고 아래 소켓 주석을 풀 것 **!
+
+        //----------------------------socket
+        int client_socket;
+        int client_socket_option;
+        //int port = 50000;
+        struct sockaddr_in server_addr;
+        //char message[PATH_MAX]=path;
+        //char *sendmessage = path;
+        //char inputMessage[100] = "";
+        char *toServer = log_path;
+        char fromServer[1024];
+
+        //TCP ipv4 socket
+        client_socket = socket(PF_INET, SOCK_STREAM, 0);
+        while (client_socket == -1)
         {
-            //perror("open error");
-            mkfifo(FIFO_FILE_C_TO_JAVA, 0666);
-            fd_c_to_java = open(FIFO_FILE_C_TO_JAVA, O_WRONLY);
+            client_socket = socket(PF_INET, SOCK_STREAM, 0);
         }
-        printf("12342134214213423414");
-        if (-1 == (fd_java_to_c = open(FIFO_FILE_JAVA_TO_C, O_RDWR)))
+        //     if (client_socket == -1)
+        //     {
+        //       printf("create socket fail");
+        //       exit(1);
+        //     }
+
+        //get local IP address
+        //KU: 127.0.0.1이 아닌 경우도 있었다
+        char *IPaddress = getIPaddress();
+        //printf("%s \n", IPaddress);
+
+        //store server address
+        memset(&server_addr, 0, sizeof(server_addr));
+
+        //IPv4
+        server_addr.sin_family = AF_INET;
+
+        //127.0.0.1
+        //store server address ip
+        server_addr.sin_addr.s_addr = inet_addr(IPaddress);
+
+        //store server address port number
+        server_addr.sin_port = htons(port);
+
+        client_socket_option = 1;
+        setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &client_socket_option, sizeof(client_socket_option));
+
+        if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)))
         {
-            //perror("open error");
-            mkfifo(FIFO_FILE_JAVA_TO_C, 0666);
-            fd_java_to_c = open(FIFO_FILE_JAVA_TO_C, O_RDWR);
+            printf("connect fail");
+            exit(1);
         }
 
-        printf("12342134214213423414");
-        //char temp[100]=log_path;
-        //strcat(temp,"\n");
-        //printf("11111%s aaa",log_path);
-        //printf("222222%s aaa",temp);
-        write(fd_c_to_java, log_path, strlen(log_path));
+        //printf("To Server Message: ");
+        //puts(toServer);
+
+        /*toServer 에 저장된 메시지를 서버로 전송*/
+        write(client_socket, toServer, strlen(toServer));
 
         while (1)
         {
-            memset(buff, 0, BUFF_SIZE);
-            if (read(fd_java_to_c, buff, BUFF_SIZE) > 0)
+
+            if (read(client_socket, fromServer, sizeof(fromServer)) > 0)
             {
-                printf("%s \n", buff);
+                //printf("From Server Message: %s\n", fromServer);
                 break;
             }
-            //printf("%d: %s\n",counter++,buff);
         }
-        //----------------------------------------pipe end
 
-        //이 부분을 실제 벨리데이터로 교체해야함
-        x = scanner(log_path);
+        //printf("Validator로 소켓통신 완료!");
 
-        //!**  통합시에는 이 부분부터 **!
+        close(client_socket);
 
-        //통제 해야한다면 메일 보내고 block 메세지 출력하기
-        if (x == -1)
+        //-------------------------------socket
+
+        // 1. fromServer 쪼개 (-1or0, ssn, mph, phn, hin)
+        // 2. 결과 화면 깔끔하게
+        //fromServer[strlen(fromServer)-1] = '\0';
+        //printf("fromServer: %s\n", fromServer);
+
+        time_t t = time(NULL);
+        struct tm tm = *localtime(&t);
+
+        printf("%d-%d-%d %d:%d:%d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+
+        //통제 해야한다면
+        if (fromServer[0] == '1')
         {
-            //   	char mail_command[300];
-            // 	char mail_content[100]={"strange trial to copy confidential file was detected"};
-            // sprintf(mail_command, "echo \"%s\" | mail -s 'alert' whitesky118@gmail.com",mail_content);  //whitesky118@gmail.com 으로 보내기
-            // 	system(mail_command);
-            // printf("blocked\n");
+            char httpmsg[500]="curl http://192.168.0.20:8080/test?filepath=";
+            strcat(httpmsg,toServer);
+            system(httpmsg);
         }
         //통제 필요없으면 다시 로그디렉토리에서 가져옴
         else
@@ -317,128 +370,8 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
             cnt++;
             sprintf(command, "mv \"%s\" \"%s\"", log_path, usb_path);
             system(command);
+            printf("%s is passed\n\n", strrchr(buffer, '/') + sizeof(char));
         }
-        //!**	이 부분까지를 삭제하고 아래 소켓 주석을 풀 것 **!
-
-        /*
-      
-        //----------------------------socket
-    int client_socket;
-    //int port = 50000;
-    struct sockaddr_in server_addr;
-    //char message[PATH_MAX]=path;
-    //char *sendmessage = path;
-    //char inputMessage[100] = "";
-    char *toServer=log_path;
-    char fromServer[1024];
-
-    //TCP ipv4 socket
-    client_socket = socket(PF_INET, SOCK_STREAM, 0);
-    while(client_socket == -1){
-        client_socket = socket(PF_INET, SOCK_STREAM, 0);
-    }
-//     if (client_socket == -1)
-//     {
-//       printf("create socket fail");
-//       exit(1);
-//     }
-
-    //get local IP address
-    //KU: 127.0.0.1이 아닌 경우도 있었다
-    char *IPaddress = getIPaddress();
-    //printf("%s \n", IPaddress);
-
-    //store server address
-    memset(&server_addr, 0, sizeof(server_addr));
-
-    //IPv4
-    server_addr.sin_family = AF_INET;
-
-    //127.0.0.1
-    //store server address ip
-    server_addr.sin_addr.s_addr = inet_addr(IPaddress);
-
-    //store server address port number
-    server_addr.sin_port = htons(port++);
-
-    if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)))
-    {
-      printf("connect fail");
-      exit(1);
-    }
-
-    //printf("To Server Message: ");
-    //puts(toServer);
-
- */
-        /*toServer 에 저장된 메시지를 서버로 전송*/
-        /*   write(client_socket, toServer, strlen(toServer));
-
-    while (1)
-    {
-
-      if (read(client_socket, fromServer, sizeof(fromServer)) > 0)
-      {
-        //printf("From Server Message: %s\n", fromServer);
-        break;
-      }
-    }
-
-    //printf("Validator로 소켓통신 완료!");
-
-    close(client_socket);
-
-    //-------------------------------socket
-
-    // 1. fromServer 쪼개 (-1or0, ssn, mph, phn, hin)
-        // 2. 결과 화면 깔끔하게
-        //fromServer[strlen(fromServer)-1] = '\0';
-        //printf("fromServer: %s\n", fromServer);
-
-    
-        time_t t = time(NULL);
-        struct tm tm = *localtime(&t);
-
-        printf("%d-%d-%d %d:%d:%d\n", tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-
-		//통제 해야한다면
-    if (fromServer[0] == '1')
-    {
-            char *temp = strtok(fromServer, " ");
-            int num = 0;
-            while (temp != NULL)
-            {
-                    if (num == 1)
-                            printf("ssn: %s\n", temp);
-                    else if (num == 2)
-                            printf("mph: %s\n", temp);
-                    else if (num == 3)
-                            printf("phn: %s\n", temp);
-                    else if (num == 4)
-                            printf("hin: %s\n", temp);
-
-                    num++;
-                    if (num >= 5)
-                            break;
-
-                    temp = strtok(NULL, " ");
-            }
-
-	    char mail_command[300];
-	    char mail_content[100]={"strange trial to copy confidential file was detected"};
-	    sprintf(mail_command, "echo \"%s\" | mail -s 'alert' whitesky118@gmail.com",mail_content);
-	    system(mail_command);
-            printf("%s is blocked\n\n", strrchr(buffer, '/') + sizeof(char));
-    }
-                //통제 필요없으면 다시 로그디렉토리에서 가져옴
-		else{
-			cnt++;
-			sprintf(command,"mv \"%s\" \"%s\"",log_path,usb_path);
-			system(command);
-                        printf("%s is passed\n\n", strrchr(buffer, '/') + sizeof(char));
-		}
-	}
-*/
     }
 }
 
