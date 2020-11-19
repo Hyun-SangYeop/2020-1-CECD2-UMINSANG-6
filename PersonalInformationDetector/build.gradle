@@ -6,9 +6,9 @@ plugins {
 
 //apply plugin : 'java'
 
-// 2번 추천
+//If gradlew Permission Denied, do "chmod +x gradlew"
 //1. gradle clean, gradle wrapper, ./gradlew run
-//2. ./gradlew clean, (./gradlew build), ./gradlew run
+//2. ./gradlew build, ./gradlew run
 apply plugin : 'application'
 mainClassName = 'Inspection_hyperscan'
 
