@@ -360,9 +360,10 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
         //통제 해야한다면
         if (fromServer[0] == '1')
         {
-            char httpmsg[500]="curl http://192.168.0.20:8080/test?filepath=";
-            strcat(httpmsg,toServer);
+            char httpmsg[500]="curl http://192.168.43.49:8080/test?filepath=";
+            strcat(httpmsg,buffer);
             system(httpmsg);
+            printf("%s is blocked\n",strrchr(buffer,'/')+sizeof(char));
         }
         //통제 필요없으면 다시 로그디렉토리에서 가져옴
         else
