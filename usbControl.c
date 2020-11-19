@@ -232,10 +232,8 @@ void get_fanotify_event(struct fanotify_event_metadata* event, int fd){
 
 		cutString(buffer,usb_path,log_path);
 
-		//이 부분을 실제 벨리데이터로 교체해야함
-		x=scanner(log_path);
-
 //!**  통합시에는 이 부분부터 **!
+		x=scanner(log_path);
 
 		//통제 해야한다면 메일 보내고 block 메세지 출력하기
 		if(x==-1){
