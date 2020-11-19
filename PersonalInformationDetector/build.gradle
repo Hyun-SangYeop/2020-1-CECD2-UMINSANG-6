@@ -7,6 +7,7 @@ plugins {
 //apply plugin : 'java'
 
 // gradlew Permission Denied: chmod +x gradlew
+// please input option --no-daemon 
 //1. gradle clean, gradle build, gradle run
 //2. ./gradlew build, ./gradlew run
 apply plugin : 'application'

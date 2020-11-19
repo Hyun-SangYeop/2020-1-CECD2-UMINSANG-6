@@ -314,11 +314,11 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
         server_addr.sin_addr.s_addr = inet_addr(IPaddress);
 
         //store server address port number
-        server_addr.sin_port = htons(port);
+        server_addr.sin_port = htons(port++);
 		
-		// bind 허가
-        client_socket_option = 1;
-        setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &client_socket_option, sizeof(client_socket_option));
+		// bind 허가, 이건 서버에 넣어줘야... (개인정보 검출 모듈 JAVA)
+        //client_socket_option = 1;
+        //setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &client_socket_option, sizeof(client_socket_option));
 
         if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)))
         {
@@ -401,9 +401,10 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
             char httpmsg[500]="curl -G http://localhost:8080/test --data-urlencode \"filepath=";
             sprintf(httpmsg, "%s%s\" -d \"ssn=%s&mph=%s&phn=%s&hin=%s\"",
                                         httpmsg, buffer_filepath, ssnNum, mphNum, phnNum, hinNum);
-            printf("%s\n", httpmsg);
+            //printf("%s\n", httpmsg);
 			system(httpmsg);
-            printf("%s is blocked\n",strrchr(buffer_filepath,'/')+sizeof(char));
+            printf("\n%s is blocked\n\n",strrchr(buffer_filepath,'/')+sizeof(char));
+
         }
         //통제 필요없으면 다시 로그디렉토리에서 가져옴
         else

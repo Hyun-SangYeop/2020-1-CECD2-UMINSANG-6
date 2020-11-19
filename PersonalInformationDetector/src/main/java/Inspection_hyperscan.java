@@ -339,6 +339,7 @@ public class Inspection_hyperscan {
 		
 		
 		int port=50000;
+
 		while (true) {
 			try
 
@@ -348,7 +349,7 @@ public class Inspection_hyperscan {
 				checkNum[2] = 0; // phn
 				checkNum[3] = 0; // hin
 
-				ServerSocket s_socket = new ServerSocket(port);
+				ServerSocket s_socket = new ServerSocket(port++);
 
 				Socket client_socket = s_socket.accept();
 
@@ -357,16 +358,16 @@ public class Inspection_hyperscan {
 				InputStream client_data = client_socket.getInputStream();
 
 				int readByteCount = client_data.read(byteArr);
-				System.out.println(readByteCount);
+				//System.out.println(readByteCount);
 				String fromClient = new String(byteArr, 0, readByteCount, "UTF-8");
 
-				System.out.println("from c-client: " + fromClient);
+				//System.out.println("from c-client: " + fromClient);
 
-				long beforeTime1 = System.currentTimeMillis();
+				//long beforeTime1 = System.currentTimeMillis();
 				int inspection = new Inspection_hyperscan().checker(fromClient, "UTF-8");
-				long afterTime1 = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
-				double secDiffTime1 = (afterTime1 - beforeTime1) / 1000.0; // 두 시간에 차 계산
-				System.out.println("시간차이(s) : " + secDiffTime1);
+				//long afterTime1 = System.currentTimeMillis(); // 코드 실행 후에 시간 받아오기
+				//double secDiffTime1 = (afterTime1 - beforeTime1) / 1000.0; // 두 시간에 차 계산
+				//System.out.println("시간차이(s) : " + secDiffTime1);
 
 				//String sendDataString = String.valueOf(secDiffTime1);
 				//String sendDataString = String.valueOf(inspection);
