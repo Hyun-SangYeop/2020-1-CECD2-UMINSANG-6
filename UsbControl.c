@@ -235,7 +235,7 @@ void get_inotify_event(int i_fd, int f_fd, userNames *users, int cnt)
 
 //위 아이노티파이에서 장착된 유에스비 경로가 마크 되었기 때문에
 //이제부터 감지대상의 이벤트가 유에스비에서 발생하면 아래의 함수가 호출됨.
-int port = 50000;
+int port = 50500;
 void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
 {
     char buffer_filepath[100];
@@ -314,11 +314,11 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
         server_addr.sin_addr.s_addr = inet_addr(IPaddress);
 
         //store server address port number
-        server_addr.sin_port = htons(port++);
+        server_addr.sin_port = htons(port);
 		
 		// bind 허가, 이건 서버에 넣어줘야... (개인정보 검출 모듈 JAVA)
-        //client_socket_option = 1;
-        //setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &client_socket_option, sizeof(client_socket_option));
+        client_socket_option = 1;
+        setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &client_socket_option, sizeof(client_socket_option));
 
         if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)))
         {
@@ -402,7 +402,7 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
             sprintf(httpmsg, "%s%s\" -d \"ssn=%s&mph=%s&phn=%s&hin=%s\"",
                                         httpmsg, buffer_filepath, ssnNum, mphNum, phnNum, hinNum);
             //printf("%s\n", httpmsg);
-			system(httpmsg);
+		system(httpmsg);
             printf("\n%s is blocked\n\n",strrchr(buffer_filepath,'/')+sizeof(char));
 
         }

@@ -338,7 +338,7 @@ public class Inspection_hyperscan {
 		
 		
 		
-		int port=50000;
+		int port=50500;
 
 		while (true) {
 			try
@@ -349,7 +349,9 @@ public class Inspection_hyperscan {
 				checkNum[2] = 0; // phn
 				checkNum[3] = 0; // hin
 
-				ServerSocket s_socket = new ServerSocket(port++);
+				ServerSocket s_socket = new ServerSocket(port);
+
+				s_socket.setReuseAddress(true);
 
 				Socket client_socket = s_socket.accept();
 
@@ -373,7 +375,7 @@ public class Inspection_hyperscan {
 				//String sendDataString = String.valueOf(inspection);
 				String sendDataString = inspection + " " + checkNum[0] + " "
 						+ checkNum[1] + " " + checkNum[2] + " " + checkNum[3] + "\0";
-				
+				System.out.println("\n" + sendDataString + "\n");
 
 				OutputStream server_data = client_socket.getOutputStream();
 
