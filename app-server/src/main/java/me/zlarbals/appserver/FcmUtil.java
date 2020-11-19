@@ -59,7 +59,7 @@ public class FcmUtil {
     public void send_FCM(String title,String content){
         try{
             FileInputStream serviceAccount =
-                    new FileInputStream("C:\\Project\\app-server\\src\\main\\resources\\fcmexam-2f5c0-firebase-adminsdk-b5x5u-c5c66a4fed.json");
+                    new FileInputStream("./src/main/resources/fcmexam-2f5c0-firebase-adminsdk-b5x5u-c5c66a4fed.json");
 
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))

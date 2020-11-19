@@ -238,9 +238,9 @@ void get_inotify_event(int i_fd, int f_fd, userNames *users, int cnt)
 int port = 50000;
 void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
 {
-    char buffer[100];
-    get_file_path_from_fd(event->fd, buffer, 100);
-    printf("Received event in path '%s'\n", buffer);
+    char buffer_filepath[100];
+    get_file_path_from_fd(event->fd, buffer_filepath, 100);
+    printf("Received event in path '%s'\n", buffer_filepath);
     //handler
     if (event->mask & FAN_CLOSE_WRITE)
     {
@@ -251,10 +251,10 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
         char usb_path[100];
         //printf("close event\n");
 
-        sprintf(command, "mv \"%s\" /usb", buffer);
+        sprintf(command, "mv \"%s\" /usb", buffer_filepath);
         system(command);
 
-        cutString(buffer, usb_path, log_path);
+        cutString(buffer_filepath, usb_path, log_path);
 
         // // mail 실험 현재 중지
         // 		x=scanner(log_path);
@@ -357,7 +357,12 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
         struct tm tm = *localtime(&t);
 
         printf("%d-%d-%d %d:%d:%d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-
+		
+		char ssnNum[10] = "\0";
+		char mphNum[10] = "\0";
+		char phnNum[10] = "\0";
+		char hinNum[10] = "\0";
+		
         //통제 해야한다면
         if (fromServer[0] == '1')
         {
@@ -365,14 +370,22 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
             int num = 0;
             while (temp != NULL)
             {
-                    if (num == 1)
+                    if (num == 1){
                             printf("ssn: %s\n", temp);
-                    else if (num == 2)
+							strcpy(ssnNum, temp);
+					}
+                    else if (num == 2){
                             printf("mph: %s\n", temp);
-                    else if (num == 3)
+							strcpy(mphNum, temp);
+					}
+                    else if (num == 3){
                             printf("phn: %s\n", temp);
-                    else if (num == 4)
+							strcpy(phnNum, temp);
+					}
+                    else if (num == 4){
                             printf("hin: %s\n", temp);
+							strcpy(hinNum, temp);
+					}
 
                     num++;
                     if (num >= 5)
@@ -383,10 +396,11 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
 			
 			// 앱의 서버 IP 주소로 변경해주어야
 			// curl 설치 필요 (USB 통제 모듈이 작동하는 곳에서)
-            char httpmsg[500]="curl http://192.168.43.49:8080/test?filepath=";
-            strcat(httpmsg,buffer);
-            system(httpmsg);
-            printf("%s is blocked\n",strrchr(buffer,'/')+sizeof(char));
+            char httpmsg[500]="curl \"http://localhost:8080/test?filepath=";
+            strcat(httpmsg, buffer_filepath);
+            sprintf(httpmsg, "%s&ssn=%s&mph=%s&phn=%s&hin=%s\"", httpmsg, ssnNum, mphNum, phnNum, hinNum);
+			system(httpmsg);
+            printf("%s is blocked\n",strrchr(buffer_filepath,'/')+sizeof(char));
         }
         //통제 필요없으면 다시 로그디렉토리에서 가져옴
         else
@@ -394,7 +408,7 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
             cnt++;
             sprintf(command, "mv \"%s\" \"%s\"", log_path, usb_path);
             system(command);
-            printf("%s is passed\n\n", strrchr(buffer, '/') + sizeof(char));
+            printf("%s is passed\n\n", strrchr(buffer_filepath, '/') + sizeof(char));
         }
     }
 }
