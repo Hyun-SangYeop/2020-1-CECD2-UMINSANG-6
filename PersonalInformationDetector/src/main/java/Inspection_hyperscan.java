@@ -21,6 +21,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import java.net.InetSocketAddress;
+
 
 public class Inspection_hyperscan {
 	
@@ -338,7 +340,9 @@ public class Inspection_hyperscan {
 		
 		
 		
-		int port=50500;
+		int port=65500;
+		ServerSocket s_socket = new ServerSocket();
+		s_socket.bind(new InetSocketAddress("10.0.2.15", port));
 
 		while (true) {
 			try
@@ -349,7 +353,7 @@ public class Inspection_hyperscan {
 				checkNum[2] = 0; // phn
 				checkNum[3] = 0; // hin
 
-				ServerSocket s_socket = new ServerSocket(port);
+				
 
 				s_socket.setReuseAddress(true);
 
@@ -375,7 +379,7 @@ public class Inspection_hyperscan {
 				//String sendDataString = String.valueOf(inspection);
 				String sendDataString = inspection + " " + checkNum[0] + " "
 						+ checkNum[1] + " " + checkNum[2] + " " + checkNum[3] + "\0";
-				System.out.println("\n" + sendDataString + "\n");
+				//System.out.println("\n" + sendDataString + "\n");
 
 				OutputStream server_data = client_socket.getOutputStream();
 
@@ -383,7 +387,7 @@ public class Inspection_hyperscan {
 
 				client_socket.close();
 
-				s_socket.close();
+				//s_socket.close(); while문 바깥에 추가요망
 
 			}
 

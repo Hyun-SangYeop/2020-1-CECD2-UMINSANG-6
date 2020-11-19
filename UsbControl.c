@@ -235,7 +235,7 @@ void get_inotify_event(int i_fd, int f_fd, userNames *users, int cnt)
 
 //위 아이노티파이에서 장착된 유에스비 경로가 마크 되었기 때문에
 //이제부터 감지대상의 이벤트가 유에스비에서 발생하면 아래의 함수가 호출됨.
-int port = 50500;
+int port = 65500;
 void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
 {
     char buffer_filepath[100];
@@ -311,7 +311,8 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
 
         //127.0.0.1
         //store server address ip
-        server_addr.sin_addr.s_addr = inet_addr(IPaddress);
+        server_addr.sin_addr.s_addr = inet_addr("10.0.2.15");
+        //server_addr.sin_addr.s_addr = inet_addr(IPaddress);
 
         //store server address port number
         server_addr.sin_port = htons(port);
@@ -320,10 +321,16 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
         client_socket_option = 1;
         setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &client_socket_option, sizeof(client_socket_option));
 
-        if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)))
+        //if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)))
+        //{
+        //    printf("connect fail");
+        //    exit(1);
+        //}
+
+	int cnect = -1;
+        while (cnect != 0)
         {
-            printf("connect fail");
-            exit(1);
+            cnect = connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr));
         }
 
         //printf("To Server Message: ");
