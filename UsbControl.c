@@ -396,9 +396,12 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
 			
 			// 앱의 서버 IP 주소로 변경해주어야
 			// curl 설치 필요 (USB 통제 모듈이 작동하는 곳에서)
-            char httpmsg[500]="curl \"http://localhost:8080/test?filepath=";
-            strcat(httpmsg, buffer_filepath);
-            sprintf(httpmsg, "%s&ssn=%s&mph=%s&phn=%s&hin=%s\"", httpmsg, ssnNum, mphNum, phnNum, hinNum);
+            // test와 filepath는 앱 서버 코드에 따라 달라질 수 있음
+            // --data-urlencode는 한글을 인식하기 위해 필요 (하나의 데이터)
+            char httpmsg[500]="curl -G http://localhost:8080/test --data-urlencode \"filepath=";
+            sprintf(httpmsg, "%s%s\" -d \"ssn=%s&mph=%s&phn=%s&hin=%s\"",
+                                        httpmsg, buffer_filepath, ssnNum, mphNum, phnNum, hinNum);
+            printf("%s\n", httpmsg);
 			system(httpmsg);
             printf("%s is blocked\n",strrchr(buffer_filepath,'/')+sizeof(char));
         }

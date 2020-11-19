@@ -348,7 +348,7 @@ public class Inspection_hyperscan {
 				checkNum[2] = 0; // phn
 				checkNum[3] = 0; // hin
 
-				ServerSocket s_socket = new ServerSocket(port++);
+				ServerSocket s_socket = new ServerSocket(port);
 
 				Socket client_socket = s_socket.accept();
 
@@ -371,7 +371,7 @@ public class Inspection_hyperscan {
 				//String sendDataString = String.valueOf(secDiffTime1);
 				//String sendDataString = String.valueOf(inspection);
 				String sendDataString = inspection + " " + checkNum[0] + " "
-						+ checkNum[1] + " " + checkNum[2] + " " + checkNum[3];
+						+ checkNum[1] + " " + checkNum[2] + " " + checkNum[3] + "\0";
 				
 
 				OutputStream server_data = client_socket.getOutputStream();
