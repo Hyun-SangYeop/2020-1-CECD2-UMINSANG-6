@@ -12,7 +12,6 @@
 /* Read all available fanotify events from the file descriptor 'fd' */
 
 #include <time.h>
-#include <sys/stat.h>
 
 //----socket
 #include <arpa/inet.h>
@@ -241,10 +240,6 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd)
 {
     char buffer_filepath[100];
     get_file_path_from_fd(event->fd, buffer_filepath, 100);
-
-    // USB에서 파일 삭제할 경우 USB내부 쓰레기통으로 갈 때 문제 해결
-    if (strstr(buffer_filepath, "/.Trash") != NULL) return;
-
     printf("Received event in path '%s'\n", buffer_filepath);
     //handler
     if (event->mask & FAN_CLOSE_WRITE)
@@ -464,14 +459,6 @@ int main(int argc, char *argv[])
 		strcpy(mediausername, argv[1]);
 	}
 	*/
-
-    const char* folder;
-    folder="/usb";
-    struct stat sb;
-
-    if(!(stat(folder,&sb) == 0 && S_ISDIR(sb.st_mode))){
-       system("mkdir /usb");
-    }
 
     system("ls /media > /list");
     FILE *fp = fopen("/list", "r");
