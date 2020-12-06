@@ -15,11 +15,11 @@ int main(int argc, char *argv[]){
     const char* folder;
     folder="/usb";
     struct stat sb;
-
+//usb 디렉터리 생성
     if(!(stat(folder,&sb) == 0 && S_ISDIR(sb.st_mode))){
 	    system("mkdir /usb");
     }
-
+//user list 가져오기
     system("ls /media > /list");
     FILE *fp = fopen("/list", "r");
     if (fp == NULL)
@@ -40,13 +40,13 @@ int main(int argc, char *argv[]){
     pthread_mutex_init(&mutex,NULL);
     pthread_mutex_init(&mutex2,NULL);
 
-    //아이노티파이 설치
+//아이노티파이 설치
     i_fd = inotify_init();
     if (i_fd < 0){
         perror("couldn't initialize inotify\n");
     }
 
-    // add users on inotify
+// user들을 inotify에 추가하기
     for (int i = 0; i < numOfUsers; ++i){
         char user_path[100];
         sprintf(user_path, "/media/%s", users[i].name);
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
         }
     }
 
-    //패노티파이 설치
+//패노티파이 설치
     fd = fanotify_init(FAN_CLOEXEC | FAN_CLASS_CONTENT | FAN_NONBLOCK,
                        O_RDONLY | O_LARGEFILE);
     if (fd == -1){
@@ -64,14 +64,14 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
-    //패노티파이가 감시할 목록은 아이노티파이 이벤트핸들러가 추가해줄 것임.
+//패노티파이가 감시할 목록은 아이노티파이 이벤트핸들러가 추가해줄 것임.
     nfds = 2;
     fds[0].fd = i_fd;
     fds[0].events = POLLIN;
     fds[1].fd = fd;
     fds[1].events = POLLIN;
 
-    //감시 시작
+//감시 시작
     while (1){
         poll_num = poll(fds, nfds, -1);
         if (poll_num == -1){
