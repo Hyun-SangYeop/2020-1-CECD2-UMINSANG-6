@@ -233,6 +233,7 @@ void get_fanotify_event(struct fanotify_event_metadata *event, int fd, ssize_t l
                 system(command);
                 fanotify_mark(fd, FAN_MARK_ADD | FAN_MARK_MOUNT, event_mask, AT_FDCWD,usb_path);
                 pthread_mutex_unlock(&mutex);
+		sleep(1); // 아래 passed printf가 blocked사이에 섞여서 뜰 때가 있음 (기능은 문제X)
                 printf("%s is passed\n\n", strrchr(buffer_filepath, '/') + sizeof(char));
             }
             
