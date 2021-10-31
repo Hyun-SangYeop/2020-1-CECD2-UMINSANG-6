@@ -3,6 +3,11 @@
 
 ---
 
+## 논문
+
+[개방형 OS에서 USB 개인정보 유출 방지 시스템](https://github.com/Hyun-SangYeop/2020-1-CECD2-UMINSANG-6/blob/master/%5B%EA%B3%B5%EC%8B%9D%5D%EA%B0%9C%EB%B0%A9%ED%98%95%20OS%EC%97%90%EC%84%9C%20USB%20%EA%B0%9C%EC%9D%B8%EC%A0%95%EB%B3%B4%20%EC%9C%A0%EC%B6%9C%20%EB%B0%A9%EC%A7%80%20%EC%8B%9C%EC%8A%A4%ED%85%9C.pdf)
+
+---
 
 ## 개요
 
@@ -20,9 +25,5 @@
 
 업데이트 예정
 
----
-## 논문
-
-[개방형 OS에서 USB 개인정보 유출 방지 시스템](https://github.com/Hyun-SangYeop/2020-1-CECD2-UMINSANG-6/blob/master/%5B%EA%B3%B5%EC%8B%9D%5D%EA%B0%9C%EB%B0%A9%ED%98%95%20OS%EC%97%90%EC%84%9C%20USB%20%EA%B0%9C%EC%9D%B8%EC%A0%95%EB%B3%B4%20%EC%9C%A0%EC%B6%9C%20%EB%B0%A9%EC%A7%80%20%EC%8B%9C%EC%8A%A4%ED%85%9C.pdf)
 
 
